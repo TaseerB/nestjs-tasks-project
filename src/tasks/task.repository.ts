@@ -13,11 +13,11 @@ export class TaskRepository extends Repository<Task> {
     console.info({ status, search });
 
     if (status) {
-      query.andWhere(`task.status = :status`, { status });
+      query.where(`task.status = :status`, { status });
     }
     if (search) {
-      query.andWhere(
-        `task.title like :search or task.description like :search`,
+      query.orWhere(
+        `(task.title like :search or task.description like :search)`,
         {
           search: `%${search}%`,
         },
@@ -25,6 +25,7 @@ export class TaskRepository extends Repository<Task> {
     }
 
     const tasks = query.getMany();
+    console.info({ tasks, query: query.getSql() });
     return tasks;
   }
 
