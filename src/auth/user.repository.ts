@@ -7,6 +7,7 @@ import { EntityRepository, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { User } from './user.entity';
+import { UserInterface } from 'src/common/common-interfaces';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -33,12 +34,10 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async login(authCredentialsDto: AuthCredentialsDto): Promise<object> {
+  async login(authCredentialsDto: AuthCredentialsDto): Promise<UserInterface> {
     const { email, password } = authCredentialsDto;
 
     const user = await this.findOne({ email });
-
-    console.info({ user, password, email });
 
     if (user && (await user.validatePassword(password))) {
       return { id: user.id, name: user.name, email: user.email };

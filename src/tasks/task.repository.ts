@@ -1,3 +1,4 @@
+import { CreateTask, GetTasks } from 'src/common/common-interfaces';
 import { EntityRepository, Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-task.filter.dto';
@@ -6,9 +7,10 @@ import { Task } from './task.entity';
 
 @EntityRepository(Task)
 export class TaskRepository extends Repository<Task> {
-  async getTasks(getTasksFilterDto: GetTasksFilterDto): Promise<Task[]> {
+  async getTasks(getTasks: GetTasks): Promise<Task[]> {
+    const { filterDto, user } = getTasks;
     const query = this.createQueryBuilder('task');
-    const { status, search } = getTasksFilterDto;
+    const { status, search } = filterDto;
 
     console.info({ status, search });
 
@@ -24,12 +26,15 @@ export class TaskRepository extends Repository<Task> {
       );
     }
 
+    query.andWhere(`task.userId = :userId`, { userId: user.id });
+
     const tasks = query.getMany();
-    console.info({ tasks, query: query.getSql() });
+    console.info({ query: query.getSql() });
     return tasks;
   }
 
-  async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
+  async createTask(inputObject: CreateTask): Promise<Task> {
+    const { createTaskDto, user } = inputObject;
     const { title, description, attachment, dueTime } = createTaskDto;
 
     const task = new Task();
@@ -39,7 +44,12 @@ export class TaskRepository extends Repository<Task> {
     task.attachment = attachment;
     task.dueTime = dueTime;
     task.status = TaskStatus.IN_PROGRESS;
+    task.user = user;
 
-    return await task.save();
+    await task.save();
+
+    delete task.user;
+
+    return task;
   }
 }

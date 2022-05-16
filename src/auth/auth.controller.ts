@@ -7,10 +7,13 @@ import {
   Param,
   Delete,
   ValidationPipe,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { GetUser } from './get-user.decorator';
 import { User } from './user.entity';
 
 @Controller('auth')
@@ -25,27 +28,33 @@ export class AuthController {
   @Post('login')
   login(
     @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
-  ): Promise<object> {
+  ): Promise<{ accessToken: string }> {
     return this.authService.login(authCredentialsDto);
   }
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
+  @Post('test')
+  @UseGuards(AuthGuard())
+  test(@GetUser() user: User) {
+    console.info({ user });
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
-  }
+  // @Get()
+  // findAll() {
+  //   return this.authService.findAll();
+  // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.authService.findOne(+id);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
+  //   return this.authService.update(+id, updateAuthDto);
+  // }
+
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.authService.remove(+id);
+  // }
 }
